@@ -29,8 +29,8 @@ public class Main {
         while (portList.hasMoreElements()) {
             String portName = portList.nextElement().getName();
             portNameList.add(portName);
+            System.out.println(portName);
         }
-
 
     }
 }
