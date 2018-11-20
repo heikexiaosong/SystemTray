@@ -248,17 +248,16 @@ public class Network {
 				while (!end) {
 					if ((in.available()) > 0) {
 						if ((len = this.in.read(buffer)) > -1) {
-							System.out.print("received len: " + len);
+							System.out.print("\nreceived len[" + len + "]");
 							for (i = 0; i < len; i++) {
-								System.out.print("data: " + buffer[i]);
+								System.out.print(buffer[i] + " ");
 								temp = buffer[i];
 								 // adjust from C-Byte to Java-Byte
 								if (temp < 0)
 									temp += 256;
 								if (temp == divider) {
 									if  (numTempBytes > 0) {
-										contact.parseInput(id, numTempBytes,
-												tempBytes);
+										//contact.parseInput(id, numTempBytes, tempBytes);
 									}
 									numTempBytes = 0;
 								} else {

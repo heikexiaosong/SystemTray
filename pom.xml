@@ -51,13 +51,13 @@
 			<version>1.0.0</version>
 		</dependency>
 
-        <dependency>
-            <groupId>io.gun</groupId>
-            <artifactId>rxtx</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/RXTXcomm.jar</systemPath>
-        </dependency>
+		<dependency>
+			<groupId>system.lib</groupId><!--JAVA的包的结构-->
+			<artifactId>RXTXcomm</artifactId><!--项目名-->
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/RXTXcomm.jar</systemPath>
+		</dependency>
 
 	</dependencies>
 
@@ -81,8 +81,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<encoding>utf-8</encoding>
-					<source>8</source>
-					<target>8</target>
+					<source>7</source>
+					<target>7</target>
 				</configuration>
 			</plugin>
 
@@ -114,7 +114,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>libs/</classpathPrefix>
 							<mainClass>
-								cn.thd.sew.Main
+								cn.thd.ui.App
 							</mainClass>
 						</manifest>
 					</archive>

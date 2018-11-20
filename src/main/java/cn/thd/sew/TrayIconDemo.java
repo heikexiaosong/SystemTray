@@ -1,7 +1,4 @@
 package cn.thd.sew;
-/*
- * TrayIconDemo.java
- */
 
 import cn.thd.ui.TabbedPane;
 
@@ -58,7 +55,7 @@ public class TrayIconDemo {
         }
 
 
-        JFrame frame = new JFrame("下轴承类型检测 - THD");
+       final JFrame frame = new JFrame("下轴承类型检测 - THD");
         frame.setSize(1000, 500);
         frame.setLocation(200, 100);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,7 +65,7 @@ public class TrayIconDemo {
 
 
         //Add the ubiquitous "Hello World" label.
-        JLabel label = new JLabel("Hello World");
+        final JLabel label = new JLabel("Hello World");
        // frame.getContentPane().add(label);
 
         frame.add(new TabbedPane(), BorderLayout.CENTER);
