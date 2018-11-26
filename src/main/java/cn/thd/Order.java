@@ -5,39 +5,11 @@ import java.util.Map;
 
 public class Order {
 
-    public enum Type {
-        GEARMOTOR, IEC_MOTOR;
-    }
-
-    public enum Color {
-        Red, Yellow, Blue, Green, Purple;
-    }
-
     private Map<String, String> result = new HashMap<>();
 
-    private String gl_katalogbez_a;
+    private String production;  // 型号
 
-    private String type;
-
-    private String abtriebswelle;
-
-    private Type aSide;
-
-    public String getGl_katalogbez_a() {
-        return gl_katalogbez_a;
-    }
-
-    public void setGl_katalogbez_a(String gl_katalogbez_a) {
-        this.gl_katalogbez_a = gl_katalogbez_a;
-    }
-
-    public String getAbtriebswelle() {
-        return abtriebswelle;
-    }
-
-    public void setAbtriebswelle(String abtriebswelle) {
-        this.abtriebswelle = abtriebswelle;
-    }
+    private String abtriebswelle; // 输出轴
 
     public Map<String, String> getResult() {
         return result;
@@ -47,19 +19,19 @@ public class Order {
         this.result = result;
     }
 
-    public String getType() {
-        return type;
+    public String getProduction() {
+        return production;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setProduction(String production) {
+        this.production = production;
     }
 
-    public Type getaSide() {
-        return aSide;
+    public String getAbtriebswelle() {
+        return abtriebswelle;
     }
 
-    public void setaSide(Type aSide) {
-        this.aSide = aSide;
+    public void setAbtriebswelle(String abtriebswelle) {
+        this.abtriebswelle = abtriebswelle;
     }
 }

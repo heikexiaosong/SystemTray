@@ -3,7 +3,6 @@ package cn.thd.ui;
 import cn.thd.ColorMapping;
 import cn.thd.Order;
 import cn.thd.OrderReader;
-import cn.thd.sew.Main;
 import gnu.io.*;
 
 import javax.swing.*;
@@ -12,12 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 public class ScannerPanel extends Component implements ActionListener, SerialPortEventListener {
 
@@ -25,6 +22,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
     private JTextField orderTextField;
     private JTextArea msg =  new JTextArea(5, 10);
+    private JScrollPane scrollPane;
 
     private InputStream inputStream = null;
 
@@ -42,38 +40,38 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                 int key = e.getKeyChar();
                 System.out.println(key);
                 if ( key == 10 ){
-                    msg.append(DATE_FORMAT.format(new Date()) + " **********************************  ");
-                    msg.append(orderTextField.getText());
+                    msg.append("**********************************");
+                    msg.append(DATE_FORMAT.format(new Date()));
                     msg.append("***********************\r\n");
 
-                    String dir = "D:\\JPOS\\data";
-                    Order result = null;
                     try {
-                        result = OrderReader.readInfo(dir, orderTextField.getText() + ".txt");
-                        msg.append("型号: " + result.getGl_katalogbez_a());
+                        Order result = OrderReader.readInfo(orderTextField.getText());
+                        msg.append("订单号: " + orderTextField.getText());
                         msg.append("\r\n");
-                        msg.append("型号: " + result.getType());
+                        msg.append("型号: " + result.getProduction());
                         msg.append("\r\n");
-                        msg.append("法兰端: " + result.getAbtriebswelle());
-                        msg.append("\r\n");
-                        msg.append("法兰端: " + result.getaSide());
+                        msg.append("输出轴: " + result.getAbtriebswelle());
                         msg.append("\r\n");
 
-                        msg.append("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
+                        msg.append("工装颜色: " + ColorMapping.getMatchColor(result.getProduction(), result.getAbtriebswelle()));
                         msg.append("\r\n");
 
-                        System.out.println("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
                         for (String name : result.getResult().keySet()) {
-                            System.out.println(key + ": " + result.getResult().get(name));
+                            System.out.println(name + ": " + result.getResult().get(name));
 
-                            msg.append(key + ": " + result.getResult().get(name));
+                            msg.append(name + ": " + result.getResult().get(name));
                             msg.append("\r\n");
                         }
                         msg.append("\r\n\r\n");
-                    } catch (IOException e1) {
+                    } catch (Exception e1) {
                         e1.printStackTrace();
                         msg.append(e1.getMessage());
-                        msg.append("\r\n");
+                        msg.append("\r\n\r\n");
+                    } finally {
+                        int maxHeight = scrollPane.getVerticalScrollBar().getMaximum();
+//                System.out.println(vscrollHeight);
+                        scrollPane.getViewport().setViewPosition(new Point(0, maxHeight));
+                        scrollPane.updateUI();
                     }
                 }
             }
@@ -84,8 +82,9 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
 
         msg.setLineWrap(true);
+        scrollPane = new JScrollPane(msg);
         // 添加到内容面板
-        mainPanel.add(msg);
+        mainPanel.add(scrollPane);
 
         return mainPanel;
     }
@@ -187,40 +186,41 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                         }
                         orderTextField.setText(new String(buffer));
 
-                        msg.append(DATE_FORMAT.format(new Date()) + " **********************************  ");
-                        msg.append(new String(buffer));
+                        msg.append("**********************************");
+                        msg.append(DATE_FORMAT.format(new Date()));
                         msg.append("***********************\r\n");
 
-                        String dir = "D:\\JPOS\\data";
-                        Order result = OrderReader.readInfo(dir, "50332942.txt");
-
-
-
-                        msg.append("型号: " + result.getGl_katalogbez_a());
-                        msg.append("\r\n");
-                        msg.append("型号: " + result.getType());
-                        msg.append("\r\n");
-                        msg.append("法兰端: " + result.getAbtriebswelle());
-                        msg.append("\r\n");
-                        msg.append("法兰端: " + result.getaSide());
+                        msg.append("订单号: " + orderTextField.getText());
                         msg.append("\r\n");
 
-                        msg.append("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
+                        Order result = OrderReader.readInfo(orderTextField.getText());
+                        msg.append("型号: " + result.getProduction());
+                        msg.append("\r\n");
+                        msg.append("输出轴: " + result.getAbtriebswelle());
                         msg.append("\r\n");
 
-                        System.out.println("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
-                        for (String key : result.getResult().keySet()) {
-                            System.out.println(key + ": " + result.getResult().get(key));
+                        msg.append("工装颜色: " + ColorMapping.getMatchColor(result.getProduction(), result.getAbtriebswelle()));
+                        msg.append("\r\n");
 
-                            msg.append(key + ": " + result.getResult().get(key));
+                        for (String name : result.getResult().keySet()) {
+                            System.out.println(name + ": " + result.getResult().get(name));
+
+                            msg.append(name + ": " + result.getResult().get(name));
                             msg.append("\r\n");
                         }
                         msg.append("\r\n\r\n");
                     }
 
-                } catch (IOException e) {
+                } catch (Exception e1) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    e1.printStackTrace();
+                    msg.append(e1.getMessage());
+                    msg.append("\r\n\r\n");
+                } finally {
+                    int maxHeight = scrollPane.getVerticalScrollBar().getMaximum();
+//                System.out.println(vscrollHeight);
+                    scrollPane.getViewport().setViewPosition(new Point(0, maxHeight));
+                    scrollPane.updateUI();
                 }
                 break;
             default:

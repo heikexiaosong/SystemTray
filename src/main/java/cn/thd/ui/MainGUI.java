@@ -13,6 +13,8 @@ public class MainGUI extends JPanel implements ActionListener {
 
     private  ScannerPanel scannerPanel;
 
+    private  ColorMapConfiguredPanel colorMapConfiguredPanel;
+
     public MainGUI() {
 
         tabbedPane = new JTabbedPane();
@@ -22,6 +24,9 @@ public class MainGUI extends JPanel implements ActionListener {
 
         scannerPanel = new ScannerPanel();
         tabbedPane.addTab("扫描枪", null, scannerPanel.make(), "扫描枪");
+
+        colorMapConfiguredPanel  = new ColorMapConfiguredPanel(this);
+        tabbedPane.addTab("颜色配对", null, colorMapConfiguredPanel.make(), "颜色配对");
 
         tabbedPane.setSelectedIndex(0);
 
