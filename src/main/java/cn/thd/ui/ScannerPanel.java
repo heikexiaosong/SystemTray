@@ -1,5 +1,8 @@
 package cn.thd.ui;
 
+import cn.thd.ColorMapping;
+import cn.thd.Order;
+import cn.thd.OrderReader;
 import cn.thd.sew.Main;
 import gnu.io.*;
 
@@ -7,11 +10,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 public class ScannerPanel extends Component implements ActionListener, SerialPortEventListener {
 
@@ -29,7 +35,53 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
         orderTextField = new JTextField(30);
         orderTextField.setMaximumSize(new Dimension(Short.MAX_VALUE, 25));
+
+        orderTextField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                int key = e.getKeyChar();
+                System.out.println(key);
+                if ( key == 10 ){
+                    msg.append(DATE_FORMAT.format(new Date()) + " **********************************  ");
+                    msg.append(orderTextField.getText());
+                    msg.append("***********************\r\n");
+
+                    String dir = "D:\\JPOS\\data";
+                    Order result = null;
+                    try {
+                        result = OrderReader.readInfo(dir, orderTextField.getText() + ".txt");
+                        msg.append("型号: " + result.getGl_katalogbez_a());
+                        msg.append("\r\n");
+                        msg.append("型号: " + result.getType());
+                        msg.append("\r\n");
+                        msg.append("法兰端: " + result.getAbtriebswelle());
+                        msg.append("\r\n");
+                        msg.append("法兰端: " + result.getaSide());
+                        msg.append("\r\n");
+
+                        msg.append("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
+                        msg.append("\r\n");
+
+                        System.out.println("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
+                        for (String name : result.getResult().keySet()) {
+                            System.out.println(key + ": " + result.getResult().get(name));
+
+                            msg.append(key + ": " + result.getResult().get(name));
+                            msg.append("\r\n");
+                        }
+                        msg.append("\r\n\r\n");
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                        msg.append(e1.getMessage());
+                        msg.append("\r\n");
+                    }
+                }
+            }
+        });
+
         mainPanel.add(orderTextField);
+
+
 
         msg.setLineWrap(true);
         // 添加到内容面板
@@ -135,9 +187,35 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                         }
                         orderTextField.setText(new String(buffer));
 
-                        msg.append(DATE_FORMAT.format(new Date()) + ": ");
+                        msg.append(DATE_FORMAT.format(new Date()) + " **********************************  ");
                         msg.append(new String(buffer));
+                        msg.append("***********************\r\n");
+
+                        String dir = "D:\\JPOS\\data";
+                        Order result = OrderReader.readInfo(dir, "50332942.txt");
+
+
+
+                        msg.append("型号: " + result.getGl_katalogbez_a());
                         msg.append("\r\n");
+                        msg.append("型号: " + result.getType());
+                        msg.append("\r\n");
+                        msg.append("法兰端: " + result.getAbtriebswelle());
+                        msg.append("\r\n");
+                        msg.append("法兰端: " + result.getaSide());
+                        msg.append("\r\n");
+
+                        msg.append("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
+                        msg.append("\r\n");
+
+                        System.out.println("工装型号: " + ColorMapping.getMatchColor(result.getType(), result.getaSide()));
+                        for (String key : result.getResult().keySet()) {
+                            System.out.println(key + ": " + result.getResult().get(key));
+
+                            msg.append(key + ": " + result.getResult().get(key));
+                            msg.append("\r\n");
+                        }
+                        msg.append("\r\n\r\n");
                     }
 
                 } catch (IOException e) {
