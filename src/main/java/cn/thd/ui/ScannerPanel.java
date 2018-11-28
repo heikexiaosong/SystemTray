@@ -1,8 +1,7 @@
 package cn.thd.ui;
 
-import cn.thd.ColorMapping;
-import cn.thd.Order;
-import cn.thd.OrderReader;
+import cn.thd.*;
+import cn.thd.Color;
 import gnu.io.*;
 import org.apache.commons.lang.StringUtils;
 
@@ -31,6 +30,8 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
     private JScrollPane scrollPane;
 
     private InputStream inputStream = null;
+
+    private OPCContext context;
 
     public Component make() {
 
@@ -77,6 +78,8 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
         scrollPane = new JScrollPane(msg);
         // 添加到内容面板
         mainPanel.add(scrollPane);
+
+        context = OPCContext.create();
 
         return mainPanel;
     }
@@ -227,10 +230,19 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
         msg.append(String.format("输出轴: %20s  ====> %s",  result.getAbtriebswelle(), aside));
         msg.append("\r\n");
 
-        msg.append("工装颜色: " + ColorMapping.getMatchColor(type, aside));
+        Color color = ColorMapping.getMatchColor(type, aside);
+        msg.append("工装颜色: " + color + " ====>  " + color.getValue());
         msg.append("\r\n");
 
         msg.append("\r\n\r\n");
+
+        try {
+            String itemId = PropertiesUtils.getValue("opc.itemid", "Channel1.Device1.Color");
+            context.writeValue(itemId, color.getValue());
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }
 
     }
 

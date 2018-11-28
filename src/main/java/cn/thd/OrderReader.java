@@ -47,17 +47,9 @@ public class OrderReader {
 
         int orderId = Integer.parseInt(_orderId);
 
-        String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
-        String database = PropertiesUtils.getValue("db.database", "MotorResultData");
-        String username = PropertiesUtils.getValue("db.username", "motqa");
-        String password = PropertiesUtils.getValue("db.password", "Motqa2017");
-
-        QueryRunner run = new QueryRunner(MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password));
-
-
-
         Order order = new Order();
 
+        QueryRunner run = new QueryRunner(MSSQLConnectionFactory.datasource());
         Map<String, Object> result = run.query("select * from motor_routine_test where assembly_order = ? ", new MapHandler(), orderId);
         if ( result==null || result.size()==0  ){
             throw new RuntimeException("没有找到订单号: " + orderId + " 对应的信息.");

@@ -32,7 +32,7 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
 
         JFrame frame = new App();
 
-        frame.setTitle("THD电机下轴承型号检测 - v1.0.0 ");			// 6-21
+        frame.setTitle("THD电机轴承颜色检测 - v1.0.0 ");			// 6-21
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(new MainGUI(),BorderLayout.CENTER);
         frame.pack();											// 6-21
@@ -51,12 +51,7 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
     private static void initDB() {
         boolean init = false;
         try {
-            String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
-            String database = PropertiesUtils.getValue("db.database", "MotorResultData");
-            String username = PropertiesUtils.getValue("db.username", "motqa");
-            String password = PropertiesUtils.getValue("db.password", "Motqa2017");
-
-            DataSource dataSource = MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password);
+            DataSource dataSource = MSSQLConnectionFactory.datasource();
             Connection conn = dataSource.getConnection();
 
             DatabaseMetaData metaData = conn.getMetaData();
@@ -91,9 +86,6 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
         } catch (SQLException e) {
             e.printStackTrace();
             throw  new RuntimeException("数据库连接异常: " + e.getMessage());
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-            throw  new RuntimeException("读取配置文件[config.properties]异常: " + e.getMessage());
         } catch (IOException e) {
             throw  new RuntimeException(e.getMessage(), e.getCause());
         }
@@ -101,12 +93,7 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
 
     private static void readDBInfo() {
         try {
-            String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
-            String database = PropertiesUtils.getValue("db.database", "MotorResultData");
-            String username = PropertiesUtils.getValue("db.username", "motqa");
-            String password = PropertiesUtils.getValue("db.password", "Motqa2017");
-
-            DataSource dataSource = MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password);
+            DataSource dataSource = MSSQLConnectionFactory.datasource();
             Connection conn = dataSource.getConnection();
 
             DatabaseMetaData metaData = conn.getMetaData();
@@ -128,9 +115,6 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
         } catch (SQLException e) {
             e.printStackTrace();
             throw  new RuntimeException("数据库连接异常: " + e.getMessage());
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-            throw  new RuntimeException("读取配置文件[config.properties]异常: " + e.getMessage());
         }
     }
 

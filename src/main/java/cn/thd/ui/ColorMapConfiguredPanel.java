@@ -35,12 +35,7 @@ public class ColorMapConfiguredPanel extends Component implements TableModelList
 
 
 		try {
-			String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
-			String database = PropertiesUtils.getValue("db.database", "MotorResultData");
-			String username = PropertiesUtils.getValue("db.username", "motqa");
-			String password = PropertiesUtils.getValue("db.password", "Motqa2017");
-
-			QueryRunner run = new QueryRunner( MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password));
+			QueryRunner run = new QueryRunner( MSSQLConnectionFactory.datasource());
 
             java.util.List<Object[]> list  = run.query("select * from thd_configuration ", new ArrayListHandler());
 
@@ -49,9 +44,6 @@ public class ColorMapConfiguredPanel extends Component implements TableModelList
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw  new RuntimeException("数据库连接异常: " + e.getMessage());
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-			throw  new RuntimeException("读取配置文件[config.properties]异常: " + e.getMessage());
 		}
 
 

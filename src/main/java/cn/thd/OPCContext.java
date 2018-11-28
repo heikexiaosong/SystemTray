@@ -7,8 +7,9 @@ import org.jinterop.dcom.core.JIVariant;
 import org.openscada.opc.dcom.list.ClassDetails;
 import org.openscada.opc.lib.common.AlreadyConnectedException;
 import org.openscada.opc.lib.common.ConnectionInformation;
-import org.openscada.opc.lib.common.NotConnectedException;
-import org.openscada.opc.lib.da.*;
+import org.openscada.opc.lib.da.Group;
+import org.openscada.opc.lib.da.Item;
+import org.openscada.opc.lib.da.Server;
 import org.openscada.opc.lib.list.Categories;
 import org.openscada.opc.lib.list.Category;
 import org.openscada.opc.lib.list.ServerList;
@@ -40,7 +41,7 @@ public class OPCContext {
 
             final ConnectionInformation connInfo = new ConnectionInformation(host, domain, clsid, username, password);
             return new OPCContext(new Server(connInfo, Executors.newScheduledThreadPool(10)));
-        } catch (ConfigurationException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.out.println(e.getMessage());
         }
@@ -56,7 +57,7 @@ public class OPCContext {
 
     public static void serverList() throws ConfigurationException, JIException, UnknownHostException {
 
-        String host = PropertiesUtils.getValue("opc.host", "192.168.30.87");
+        String host = PropertiesUtils.getValue("opc.host", "10.0.2.15");
         String domain = PropertiesUtils.getValue("opc.domain", "");
         String username = PropertiesUtils.getValue("opc.username", "krsoft");
         String password = PropertiesUtils.getValue("opc.password", "gavel777");
@@ -177,7 +178,7 @@ public class OPCContext {
 
     public static void main(String[] args) {
 
-        String itemId = "Channel1.Device1.DB10";
+        String itemId = "Channel1.Device1.Tag2";
 
         try {
             OPCContext.serverList();

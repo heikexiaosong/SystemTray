@@ -1,5 +1,6 @@
 package cn.thd.db;
 
+import cn.thd.PropertiesUtils;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
@@ -13,9 +14,15 @@ public class MSSQLConnectionFactory {
 
     private static Map<String, HikariDataSource> map = new ConcurrentHashMap<>();
 
-    public static synchronized DataSource datasource(String hostName, int port, String database, String username, String password) {
+    public static synchronized DataSource datasource() {
 
-        String key = String.format("%s_%d_%s", hostName, port, database).toLowerCase();
+        String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
+        String database = PropertiesUtils.getValue("db.database", "MotorResultData");
+        String username = PropertiesUtils.getValue("db.username", "motqa");
+        String password = PropertiesUtils.getValue("db.password", "Motqa2017");
+
+
+        String key = String.format("%s_%d_%s", hostName, 1433, database).toLowerCase();
         if ( map.containsKey(key) ){
             HikariDataSource dataSource = map.get(key);
             if ( dataSource!=null && dataSource.isRunning() ){
@@ -23,11 +30,10 @@ public class MSSQLConnectionFactory {
             }
         }
 
-        HikariDataSource ds = new HikariDataSource();
-
-        String url = String.format("jdbc:sqlserver://%s:%d;database=%s", hostName, port, database);
+        String url = String.format("jdbc:sqlserver://%s:%d;database=%s", hostName, 1433, database);
         System.out.println("url: " + url);
 
+        HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl(url);
         ds.setUsername(username);
         ds.setPassword(password);
@@ -41,6 +47,8 @@ public class MSSQLConnectionFactory {
 
         return ds;
     }
+
+
 
 
 }
