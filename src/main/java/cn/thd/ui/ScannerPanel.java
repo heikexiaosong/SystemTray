@@ -4,6 +4,7 @@ import cn.thd.ColorMapping;
 import cn.thd.Order;
 import cn.thd.OrderReader;
 import gnu.io.*;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,8 +16,13 @@ import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ScannerPanel extends Component implements ActionListener, SerialPortEventListener {
+
+    private static Pattern PATTERN = Pattern.compile("DR[a-zA-Z]([0-9]*)[a-zA-Z]");//获取正则表达式中的分组，每一组小括号为一组
 
     private static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
@@ -38,38 +44,24 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
             @Override
             public void keyTyped(KeyEvent e) {
                 int key = e.getKeyChar();
-                System.out.println(key);
                 if ( key == 10 ){
                     msg.append("**********************************");
                     msg.append(DATE_FORMAT.format(new Date()));
                     msg.append("***********************\r\n");
 
+                    String orderId = StringUtils.trim(orderTextField.getText());
+                    orderTextField.setText("");
+                    msg.append("订单号: " + orderId);
+                    msg.append("\r\n");
+
                     try {
-                        Order result = OrderReader.readInfo(orderTextField.getText());
-                        msg.append("订单号: " + orderTextField.getText());
-                        msg.append("\r\n");
-                        msg.append("型号: " + result.getProduction());
-                        msg.append("\r\n");
-                        msg.append("输出轴: " + result.getAbtriebswelle());
-                        msg.append("\r\n");
-
-                        msg.append("工装颜色: " + ColorMapping.getMatchColor(result.getProduction(), result.getAbtriebswelle()));
-                        msg.append("\r\n");
-
-                        for (String name : result.getResult().keySet()) {
-                            System.out.println(name + ": " + result.getResult().get(name));
-
-                            msg.append(name + ": " + result.getResult().get(name));
-                            msg.append("\r\n");
-                        }
-                        msg.append("\r\n\r\n");
+                        infoDisplay(OrderReader.readInfo(orderId));
                     } catch (Exception e1) {
                         e1.printStackTrace();
                         msg.append(e1.getMessage());
                         msg.append("\r\n\r\n");
                     } finally {
                         int maxHeight = scrollPane.getVerticalScrollBar().getMaximum();
-//                System.out.println(vscrollHeight);
                         scrollPane.getViewport().setViewPosition(new Point(0, maxHeight));
                         scrollPane.updateUI();
                     }
@@ -184,31 +176,18 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
                             System.out.print((char)b + ",");
                         }
-                        orderTextField.setText(new String(buffer));
+
+                        String orderId = new String(buffer).trim();
+
+                        orderTextField.setText(orderId);
 
                         msg.append("**********************************");
                         msg.append(DATE_FORMAT.format(new Date()));
                         msg.append("***********************\r\n");
-
-                        msg.append("订单号: " + orderTextField.getText());
+                        msg.append("订单号: " + orderId);
                         msg.append("\r\n");
 
-                        Order result = OrderReader.readInfo(orderTextField.getText());
-                        msg.append("型号: " + result.getProduction());
-                        msg.append("\r\n");
-                        msg.append("输出轴: " + result.getAbtriebswelle());
-                        msg.append("\r\n");
-
-                        msg.append("工装颜色: " + ColorMapping.getMatchColor(result.getProduction(), result.getAbtriebswelle()));
-                        msg.append("\r\n");
-
-                        for (String name : result.getResult().keySet()) {
-                            System.out.println(name + ": " + result.getResult().get(name));
-
-                            msg.append(name + ": " + result.getResult().get(name));
-                            msg.append("\r\n");
-                        }
-                        msg.append("\r\n\r\n");
+                        infoDisplay(OrderReader.readInfo(orderId));
                     }
 
                 } catch (Exception e1) {
@@ -227,5 +206,50 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                 break;
         }
 
+    }
+
+    private void infoDisplay(Order result){
+        if ( result==null ){
+            return;
+        }
+
+        Map<String, String> attrs = result.getResult();
+        for (String name : attrs.keySet()) {
+            String value = attrs.get(name);
+            System.out.println(String.format("%-32s: %s", name, value));
+        }
+
+        String type = toType(result.getProduction());
+        String aside = toAside(result.getAbtriebswelle());
+
+        msg.append(String.format("型号:   %20s  ====> %s",  result.getProduction(), type));
+        msg.append("\r\n");
+        msg.append(String.format("输出轴: %20s  ====> %s",  result.getAbtriebswelle(), aside));
+        msg.append("\r\n");
+
+        msg.append("工装颜色: " + ColorMapping.getMatchColor(type, aside));
+        msg.append("\r\n");
+
+        msg.append("\r\n\r\n");
+
+    }
+
+    private String toType(String production){
+
+        Matcher matcher =  PATTERN.matcher(production);//进行匹配
+        if ( matcher.find() ) {//判断正则表达式是否匹配到
+            return  "DR" + matcher.group(1);
+        }
+        return  production;
+    }
+
+    private String toAside(String abtriebswelle){
+        if ( abtriebswelle.contains("pinion") ){
+            return  "gearmotor";
+        } else if ( abtriebswelle.contains("lg") ){
+            return  "IECmotor";
+        }
+
+        return  abtriebswelle;
     }
 }

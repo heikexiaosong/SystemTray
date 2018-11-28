@@ -1,11 +1,18 @@
 package cn.thd.ui;
 
+import cn.thd.PropertiesUtils;
+import cn.thd.db.MSSQLConnectionFactory;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ArrayListHandler;
+
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 public class ColorMapConfiguredPanel extends Component implements TableModelListener {
 
@@ -24,18 +31,30 @@ public class ColorMapConfiguredPanel extends Component implements TableModelList
 
 		String[] columnNames = {"ID", "型号", "输出轴", "颜色代码"};
 
-		Object[][] data = {
-				{"Kathy", "Smith",
-						"Snowboarding", new Integer(5)},
-				{"John", "Doe",
-						"Rowing", new Integer(3)},
-				{"Sue", "Black",
-						"Knitting", new Integer(2)},
-				{"Jane", "White",
-						"Speed reading", new Integer(20)},
-				{"Joe", "Brown",
-						"Pool", new Integer(10)}
-		};
+		Object[][] data = new Object[0][];
+
+
+		try {
+			String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
+			String database = PropertiesUtils.getValue("db.database", "MotorResultData");
+			String username = PropertiesUtils.getValue("db.username", "motqa");
+			String password = PropertiesUtils.getValue("db.password", "Motqa2017");
+
+			QueryRunner run = new QueryRunner( MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password));
+
+            java.util.List<Object[]> list  = run.query("select * from thd_configuration ", new ArrayListHandler());
+
+            data = list.toArray(new Object[list.size()][]);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw  new RuntimeException("数据库连接异常: " + e.getMessage());
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw  new RuntimeException("读取配置文件[config.properties]异常: " + e.getMessage());
+		}
+
+
 
 		final JTable table = new JTable(data, columnNames);
 		table.setPreferredScrollableViewportSize(new Dimension(500, 70));

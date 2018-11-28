@@ -1,7 +1,20 @@
 package cn.thd.ui;
 
+import cn.thd.PropertiesUtils;
+import cn.thd.db.MSSQLConnectionFactory;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ArrayListHandler;
+
+import javax.sql.DataSource;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
+import java.util.List;
 
 public class App extends JFrame {		// 6/21 whole gui is now JFrame
 
@@ -14,6 +27,8 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
 	public static final String version = "v1.0.0";          // 7/12
 
 	public static void main(String[] args) {
+	    
+	    initDB();
 
         JFrame frame = new App();
 
@@ -24,6 +39,99 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
         frame.setSize(850,700 );
         frame.setVisible(true);
 
+
+        //readDBInfo();
+
+
+    }
+
+    /**
+     * init db
+     */
+    private static void initDB() {
+        boolean init = false;
+        try {
+            String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
+            String database = PropertiesUtils.getValue("db.database", "MotorResultData");
+            String username = PropertiesUtils.getValue("db.username", "motqa");
+            String password = PropertiesUtils.getValue("db.password", "Motqa2017");
+
+            DataSource dataSource = MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password);
+            Connection conn = dataSource.getConnection();
+
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet resultSet = metaData.getTables(null, "%", "thd_configuration", new String[]{"TABLE"});
+            while ( resultSet.next() ){
+                String tablename = resultSet.getString("TABLE_NAME");
+                if ( tablename.equalsIgnoreCase("thd_configuration") ){
+                    init = true;
+                    break;
+                }
+            }
+            System.out.println("thd_configuration exist: " + init);
+            if ( !init ) {
+                String initSql = Files.toString(new File("db.sql"), Charsets.UTF_8);
+                System.out.println("Create Table SQL: \n" + initSql);
+
+                Statement statement = conn.createStatement();
+                statement.executeUpdate(initSql);
+
+                List<String> lines = Files.readLines(new File("data.sql"), Charsets.UTF_8);
+                for (String line : lines) {
+                    if ( line!=null && line.length() > 0 ){
+                        try {
+                            statement.executeUpdate(line);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                statement.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw  new RuntimeException("数据库连接异常: " + e.getMessage());
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+            throw  new RuntimeException("读取配置文件[config.properties]异常: " + e.getMessage());
+        } catch (IOException e) {
+            throw  new RuntimeException(e.getMessage(), e.getCause());
+        }
+    }
+
+    private static void readDBInfo() {
+        try {
+            String hostName = PropertiesUtils.getValue("db.hostName", "10.9.24.12");
+            String database = PropertiesUtils.getValue("db.database", "MotorResultData");
+            String username = PropertiesUtils.getValue("db.username", "motqa");
+            String password = PropertiesUtils.getValue("db.password", "Motqa2017");
+
+            DataSource dataSource = MSSQLConnectionFactory.datasource(hostName, 1433, database, username, password);
+            Connection conn = dataSource.getConnection();
+
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet resultSet = metaData.getTables(null, "%", null, new String[]{"TABLE"});
+            while ( resultSet.next() ){
+                String tablename = resultSet.getString("TABLE_NAME");
+                String schema = resultSet.getString("TABLE_SCHEM");
+                System.out.println(tablename);
+
+                ResultSet columns =  conn.getMetaData().getColumns(null, schema, tablename.toUpperCase(), null);
+                while ( columns.next() ) {
+
+                    System.out.println("\t" + columns.getString("COLUMN_NAME") + "; "  + columns.getString("TYPE_NAME"));
+                }
+
+                System.out.println("\n");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw  new RuntimeException("数据库连接异常: " + e.getMessage());
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+            throw  new RuntimeException("读取配置文件[config.properties]异常: " + e.getMessage());
+        }
     }
 
 }

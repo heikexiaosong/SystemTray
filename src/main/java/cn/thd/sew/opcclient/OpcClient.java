@@ -1,5 +1,7 @@
 package cn.thd.sew.opcclient;
 
+import cn.thd.PropertiesUtils;
+import org.apache.commons.configuration.ConfigurationException;
 import org.openscada.opc.lib.common.ConnectionInformation;
 import org.openscada.opc.lib.da.Server;
 import org.openscada.opc.lib.da.browser.BaseBrowser;
@@ -20,7 +22,8 @@ public class OpcClient {
   }
 
   private static class LazyHolder {
-    private static final OpcClient INSTANCE = buildOpcClient(Env.HOST, Env.USER, Env.PASSWORD, Env.CLSID);
+
+    private static final OpcClient INSTANCE = null;// buildOpcClient(Env.HOST, Env.USER, Env.PASSWORD, Env.CLSID);
   }
 
   public static final OpcClient getInstance() {
