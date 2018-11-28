@@ -45,9 +45,12 @@ public class ConnectionInformation
         super ();
     }
 
-    public ConnectionInformation ( final String user, final String password )
+    public ConnectionInformation (final String host, final String domain, final String clsid, final String user, final String password )
     {
         super ();
+        this._host = host;
+        this._domain = domain;
+        this._clsid = clsid;
         this._user = user;
         this._password = password;
     }

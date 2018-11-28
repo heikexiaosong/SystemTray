@@ -29,7 +29,7 @@ public class UtgardTutorial2 {
         ci.setPassword("gavel777");
         //ci.setProgId("Kepware Communications Server 5.14");
         ci.setClsid("B3AF0BF6-4C0C-4804-A122-6F3B160F4397"); // if ProgId is not working, try it using the Clsid instead
-        final String itemId = "Channel1.Device1.DBW0";
+        final String itemId = "Channel1.Device1.DB10";
 
 
 

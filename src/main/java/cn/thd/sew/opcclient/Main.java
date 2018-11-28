@@ -35,7 +35,7 @@ public class Main {
         // 关闭初始化日志信息
         //Logger.getLogger ( "org.jinterop" ).setLevel(Level.WARNING);
 
-        String host = PropertiesUtils.getValue("opc.host", "127.0.0.1");
+        String host = PropertiesUtils.getValue("opc.host", "192.168.30.87");
         String domain = PropertiesUtils.getValue("opc.domain", "");
         String username = PropertiesUtils.getValue("opc.username", "krsoft");
         String password = PropertiesUtils.getValue("opc.password", "gavel777");
