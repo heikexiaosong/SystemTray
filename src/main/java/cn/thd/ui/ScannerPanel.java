@@ -30,7 +30,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
     private InputStream inputStream = null;
 
-    private OPCContext context;
+    private  OPCContext context;
 
     public Component make() {
 
@@ -234,12 +234,14 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
         msg.append("工装颜色选择: " + colorCode);
         msg.append("\r\n");
 
+        msg.paintImmediately(msg.getBounds());
+
         try {
             String item_color = PropertiesUtils.getValue("opc.color.itemid", "Channel1.Device1.Color");
             String item_pulse = PropertiesUtils.getValue("opc.pulse.itemid", "Channel1.Device1.Pulse");
 
             context.writeValue(item_color, colorCode);
-            context.pulseSignal(item_pulse, 5000);
+            context.pulseSignal(item_pulse, 1000);
             msg.append("PLC信号发送成功");
             msg.append("\r\n");
         }catch (Exception e) {
