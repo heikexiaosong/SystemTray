@@ -7,16 +7,18 @@ import org.jinterop.dcom.core.JIVariant;
 import org.openscada.opc.dcom.list.ClassDetails;
 import org.openscada.opc.lib.common.AlreadyConnectedException;
 import org.openscada.opc.lib.common.ConnectionInformation;
-import org.openscada.opc.lib.da.Group;
-import org.openscada.opc.lib.da.Item;
-import org.openscada.opc.lib.da.Server;
+import org.openscada.opc.lib.da.*;
 import org.openscada.opc.lib.list.Categories;
 import org.openscada.opc.lib.list.Category;
 import org.openscada.opc.lib.list.ServerList;
 
 import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class OPCContext {
 
@@ -175,35 +177,139 @@ public class OPCContext {
     }
 
 
+    /**
+     *  Item 产生 脉冲信号  岩石 delay ms
+     *
+     * @param itemId
+     * @param delay
+     * @throws Exception
+     */
+    public void pulseSignal(String itemId, int delay) throws Exception {
+
+        if (StringUtils.isBlank(itemId)){
+            throw new RuntimeException("ItemId 不能为空!");
+        }
+
+        if ( _server == null ){
+            throw new RuntimeException("OPC Server 不能为空!");
+        }
+
+        try {
+            if ( !_server.isConnected() ) {
+                _server.connect();
+            }
+        } catch (AlreadyConnectedException e) {
+        }
+
+
+        try {
+
+            Group group = null;
+            try {
+                group = _server.findGroup("write_group");
+                group.clear();
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("分组[write_group]不存在, 重新创建!");
+                group = _server.addGroup("write_group");
+            }
+
+            if ( !group.isActive() ){
+                group.setActive(true);
+            }
+
+            final Item item = group.addItem(itemId);
+
+            try {
+                item.write(new JIVariant(1));
+                System.out.println(Calendar.getInstance().getTimeInMillis() + ": " +  itemId +  " >>> writing value: 1");
+
+                Thread.sleep(delay);
+
+                item.write(new JIVariant(0));
+                System.out.println(Calendar.getInstance().getTimeInMillis() + ": " +  itemId +  " >>> writing value: 0");
+
+            } catch (JIException e) {
+                e.printStackTrace();
+            }
+
+        } catch (final JIException e) {
+            System.out.println(String.format("%08X: %s", e.getErrorCode(),  _server.getErrorMessage(e.getErrorCode())));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void monitor(final String itemId, final int interval, final int delay) throws Exception {
+
+
+        if (StringUtils.isBlank(itemId)){
+            throw new RuntimeException("ItemId 不能为空!");
+        }
+
+        if ( _server == null ){
+            throw new RuntimeException("OPC Server 不能为空!");
+        }
+
+        try {
+            if ( !_server.isConnected() ) {
+                _server.connect();
+            }
+        } catch (AlreadyConnectedException e) {
+        }
+
+        final  ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        Future<?>  future = Executors.newSingleThreadExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // add sync access, poll every 500 ms
+                    final AccessBase access = new SyncAccess(_server, interval);
+                    access.addItem(itemId, new DataCallback() {
+                        @Override
+                        public void changed(Item item, ItemState state) {
+
+                            try {
+                                System.out.println(Calendar.getInstance().getTimeInMillis() + ": " + item.getId() + " >>> Value:"  + state.getValue().getObjectAsUnsigned().getValue());
+                            } catch (JIException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    access.bind();
+                    Thread.sleep(delay);
+                    access.unbind();
+                } catch (final Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    executorService.shutdownNow();
+                }
+            }
+        });
+
+    }
+
+
+
+
 
     public static void main(String[] args) {
 
-        String itemId = "Channel1.Device1.Tag2";
+        String item_color = PropertiesUtils.getValue("opc.color.itemid", "Channel1.Device1.Color");
+
+        String item_pulse = PropertiesUtils.getValue("opc.pulse.itemid", "Channel1.Device1.Pulse");
 
         try {
             OPCContext.serverList();
 
-            OPCContext  context = OPCContext.create();
+            final  OPCContext  context = OPCContext.create();
 
-            Item item = context.readValue(itemId);
+            context.monitor(item_pulse, 200, 3000);
 
-            System.out.println(itemId + " >>> read value: " + item.read(true).getValue().getObjectAsUnsigned().getValue());
+            context.pulseSignal(item_pulse, 1000);
 
-
-            context.writeValue(itemId, 10);
-
-
-            item = context.readValue(itemId);
-
-            System.out.println(itemId + " >>> read value: " + item.read(true).getValue().getObjectAsUnsigned().getValue());
-
-
-            context.writeValue(itemId, 20);
-
-
-            item = context.readValue(itemId);
-
-            System.out.println(itemId + " >>> read value: " + item.read(true).getValue().getObjectAsUnsigned().getValue());
 
 
         }catch (Exception e) {

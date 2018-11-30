@@ -1,7 +1,6 @@
 package cn.thd.ui;
 
 import cn.thd.*;
-import cn.thd.Color;
 import gnu.io.*;
 import org.apache.commons.lang.StringUtils;
 
@@ -222,28 +221,30 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
             System.out.println(String.format("%-32s: %s", name, value));
         }
 
-        String type = toType(result.getProduction());
-        String aside = toAside(result.getAbtriebswelle());
-
-        msg.append(String.format("型号:   %20s  ====> %s",  result.getProduction(), type));
+        msg.append(String.format("型号:   %20s",  result.getProduction()));
         msg.append("\r\n");
-        msg.append(String.format("输出轴: %20s  ====> %s",  result.getAbtriebswelle(), aside));
+        msg.append(String.format("输出轴: %20s  ====> 轴伸大小: %s",  result.getAbtriebswelle(),  ShaftExtention.parse(result.getAbtriebswelle())));
         msg.append("\r\n");
 
-        Color color = ColorMapping.getMatchColor(type, aside);
-        msg.append("工装颜色: " + color + " ====>  " + color.getValue());
+        int colorCode = ColorMapping.selectColor(result.getProduction(), ShaftExtention.parse(result.getAbtriebswelle()));
+        msg.append("工装颜色选择: " + colorCode);
         msg.append("\r\n");
-
-        msg.append("\r\n\r\n");
 
         try {
-            String itemId = PropertiesUtils.getValue("opc.itemid", "Channel1.Device1.Color");
-            context.writeValue(itemId, color.getValue());
-        } catch (Exception e) {
+            String item_color = PropertiesUtils.getValue("opc.color.itemid", "Channel1.Device1.Color");
+            String item_pulse = PropertiesUtils.getValue("opc.pulse.itemid", "Channel1.Device1.Pulse");
+
+            context.writeValue(item_color, colorCode);
+            context.pulseSignal(item_pulse, 1000);
+            msg.append("PLC信号发送成功");
+            msg.append("\r\n");
+        }catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, e.getMessage());
+            msg.append("PLC数据发送异常: " + e.getMessage());
         }
 
+
+        msg.append("\r\n\r\n");
     }
 
     private String toType(String production){
@@ -264,4 +265,6 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
         return  abtriebswelle;
     }
+
+
 }

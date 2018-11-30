@@ -5,11 +5,11 @@ import java.util.Map;
 
 public class Order {
 
-    private Map<String, String> result = new HashMap<>();
-
     private String production;  // 型号
 
     private String abtriebswelle; // 输出轴
+
+    private Map<String, String> result = new HashMap<>(); // notes 解析出的属性
 
     public Map<String, String> getResult() {
         return result;

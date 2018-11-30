@@ -32,7 +32,7 @@ public class OrderReader {
             System.out.println("型号: " + result.getProduction());
             System.out.println("输出轴: " + result.getAbtriebswelle());
 
-            System.out.println("工装型号: " + ColorMapping.getMatchColor(result.getProduction(), result.getAbtriebswelle()));
+            System.out.println("工装型号: " + ColorMapping.selectColor(result.getProduction(), result.getAbtriebswelle()));
 
             System.out.println(" === ");
 
