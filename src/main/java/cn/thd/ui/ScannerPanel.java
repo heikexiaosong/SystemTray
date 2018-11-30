@@ -2,6 +2,7 @@ package cn.thd.ui;
 
 import cn.thd.*;
 import gnu.io.*;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
@@ -10,7 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -59,7 +62,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                     msg.append("\r\n");
 
                     try {
-                        orderHandler(OrderReader.readInfo(orderId));
+                        orderHandler(orderId);
                     } catch (Exception e1) {
                         e1.printStackTrace();
                         msg.append(e1.getMessage());
@@ -193,7 +196,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                         msg.append("订单号: " + orderId);
                         msg.append("\r\n");
 
-                        orderHandler(OrderReader.readInfo(orderId));
+                        orderHandler(orderId);
                     }
 
                 } catch (Exception e1) {
@@ -203,7 +206,6 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                     msg.append("\r\n\r\n");
                 } finally {
                     int maxHeight = scrollPane.getVerticalScrollBar().getMaximum();
-//                System.out.println(vscrollHeight);
                     scrollPane.getViewport().setViewPosition(new Point(0, maxHeight));
                     scrollPane.updateUI();
                 }
@@ -214,24 +216,35 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
     }
 
-    private void orderHandler(Order result){
-        if ( result==null ){
-            return;
+    private void orderHandler(String orderId){
+
+        int colorCode = ColorMapping.UNKNOWN;
+
+        try {
+            Order result = OrderReader.readInfo(orderId);
+            if ( result==null ){
+                throw new Exception("订单[" + orderId + "]信息未找到!");
+            }
+
+            Map<String, String> attrs = result.getResult();
+            for (String name : attrs.keySet()) {
+                String value = attrs.get(name);
+                System.out.println(String.format("%-32s: %s", name, value));
+            }
+
+            msg.append(String.format("型号:   %20s",  result.getProduction()));
+            msg.append("\r\n");
+            msg.append(String.format("输出轴: %20s  ====> 轴伸大小: %s",  result.getAbtriebswelle(),  ShaftExtention.parse(result.getAbtriebswelle())));
+            msg.append("\r\n");
+
+            colorCode = ColorMapping.selectColor(result.getProduction(), ShaftExtention.parse(result.getAbtriebswelle()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            msg.append(e.getMessage());
+            msg.append("\r\n");
         }
 
-        Map<String, String> attrs = result.getResult();
-        for (String name : attrs.keySet()) {
-            String value = attrs.get(name);
-            System.out.println(String.format("%-32s: %s", name, value));
-        }
-
-        msg.append(String.format("型号:   %20s",  result.getProduction()));
-        msg.append("\r\n");
-        msg.append(String.format("输出轴: %20s  ====> 轴伸大小: %s",  result.getAbtriebswelle(),  ShaftExtention.parse(result.getAbtriebswelle())));
-        msg.append("\r\n");
-
-        int colorCode = ColorMapping.selectColor(result.getProduction(), ShaftExtention.parse(result.getAbtriebswelle()));
-        msg.append("工装颜色选择: " + colorCode);
+        msg.append(">>> 工装颜色选择: " + colorCode);
         msg.append("\r\n");
 
         msg.paintImmediately(msg.getBounds());
@@ -242,35 +255,13 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
             context.writeValue(item_color, colorCode);
             context.pulseSignal(item_pulse, 1000);
-            msg.append("PLC信号发送成功");
+            msg.append(">>> PLC信号发送成功");
             msg.append("\r\n");
         }catch (Exception e) {
             e.printStackTrace();
-            msg.append("PLC数据发送异常: " + e.getMessage());
+            msg.append(">>> PLC数据发送异常: " + e.getMessage());
         }
-
 
         msg.append("\r\n\r\n");
     }
-
-    private String toType(String production){
-
-        Matcher matcher =  PATTERN.matcher(production);//进行匹配
-        if ( matcher.find() ) {//判断正则表达式是否匹配到
-            return  "DR" + matcher.group(1);
-        }
-        return  production;
-    }
-
-    private String toAside(String abtriebswelle){
-        if ( abtriebswelle.contains("pinion") ){
-            return  "gearmotor";
-        } else if ( abtriebswelle.contains("lg") ){
-            return  "IECmotor";
-        }
-
-        return  abtriebswelle;
-    }
-
-
 }

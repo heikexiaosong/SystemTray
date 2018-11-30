@@ -147,7 +147,7 @@
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>libs/</classpathPrefix>
 							<mainClass>
-								cn.thd.ui.App
+								cn.thd.sew.SystemTrayApp
 							</mainClass>
 						</manifest>
 					</archive>

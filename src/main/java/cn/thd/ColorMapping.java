@@ -2,7 +2,6 @@ package cn.thd;
 
 import cn.thd.db.MSSQLConnectionFactory;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.sql.SQLException;
@@ -11,7 +10,7 @@ import java.util.Map;
 
 public class ColorMapping {
 
-    private static final int UNKNOWN = 13;
+    public static final int UNKNOWN = 13;
 
     private static final String QUERY_SQL = "select * from bearing_kit_production" +
             "                   left join bearing_kit on bearing_kit.id = bearing_kit_id" +

@@ -37,13 +37,13 @@ public class OrderReader {
             System.out.println(" === ");
 
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-    public static Order readInfo(String _orderId) throws IOException, ConfigurationException, SQLException {
+    public static Order readInfo(String _orderId) throws Exception {
 
         int orderId = Integer.parseInt(_orderId);
 
@@ -52,7 +52,7 @@ public class OrderReader {
         QueryRunner run = new QueryRunner(MSSQLConnectionFactory.datasource());
         Map<String, Object> result = run.query("select * from motor_routine_test where assembly_order = ? ", new MapHandler(), orderId);
         if ( result==null || result.size()==0  ){
-            throw new RuntimeException("没有找到订单号: " + orderId + " 对应的信息.");
+            throw new Exception("没有找到订单号: " + orderId + " 对应的信息.");
         }
 
         order.setProduction((String)result.get("production"));

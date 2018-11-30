@@ -27,17 +27,25 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
 	public static final String version = "v1.0.0";          // 7/12
 
 	public static void main(String[] args) {
+
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JFrame frame = new App();
+
+                frame.setTitle("THD电机轴承颜色检测 - v1.0.0 ");			// 6-21
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.getContentPane().add(new MainGUI(),BorderLayout.CENTER);
+                frame.pack();											// 6-21
+                frame.setSize(850,700 );
+                frame.setVisible(true);
+            }
+        });
 	    
 	    //initDB();
 
-        JFrame frame = new App();
 
-        frame.setTitle("THD电机轴承颜色检测 - v1.0.0 ");			// 6-21
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(new MainGUI(),BorderLayout.CENTER);
-        frame.pack();											// 6-21
-        frame.setSize(850,700 );
-        frame.setVisible(true);
 
 
         //readDBInfo();
