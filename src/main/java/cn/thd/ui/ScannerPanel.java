@@ -50,12 +50,16 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                     msg.append("***********************\r\n");
 
                     String orderId = StringUtils.trim(orderTextField.getText());
+                    if ( orderId==null || orderId.length()==0 ){
+                        return;
+                    }
+
                     orderTextField.setText("");
                     msg.append("订单号: " + orderId);
                     msg.append("\r\n");
 
                     try {
-                        infoDisplay(OrderReader.readInfo(orderId));
+                        orderHandler(OrderReader.readInfo(orderId));
                     } catch (Exception e1) {
                         e1.printStackTrace();
                         msg.append(e1.getMessage());
@@ -189,7 +193,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                         msg.append("订单号: " + orderId);
                         msg.append("\r\n");
 
-                        infoDisplay(OrderReader.readInfo(orderId));
+                        orderHandler(OrderReader.readInfo(orderId));
                     }
 
                 } catch (Exception e1) {
@@ -210,7 +214,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
     }
 
-    private void infoDisplay(Order result){
+    private void orderHandler(Order result){
         if ( result==null ){
             return;
         }
@@ -235,7 +239,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
             String item_pulse = PropertiesUtils.getValue("opc.pulse.itemid", "Channel1.Device1.Pulse");
 
             context.writeValue(item_color, colorCode);
-            context.pulseSignal(item_pulse, 1000);
+            context.pulseSignal(item_pulse, 5000);
             msg.append("PLC信号发送成功");
             msg.append("\r\n");
         }catch (Exception e) {

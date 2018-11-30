@@ -28,7 +28,7 @@ public class App extends JFrame {		// 6/21 whole gui is now JFrame
 
 	public static void main(String[] args) {
 	    
-	    initDB();
+	    //initDB();
 
         JFrame frame = new App();
 

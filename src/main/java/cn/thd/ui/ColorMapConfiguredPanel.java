@@ -29,7 +29,7 @@ public class ColorMapConfiguredPanel extends Component implements TableModelList
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 
-		String[] columnNames = {"ID", "型号", "输出轴", "颜色代码"};
+		String[] columnNames = {"ID", "型号", "轴伸大小", "工装编码", "工装颜色", "颜色代码"};
 
 		Object[][] data = new Object[0][];
 
@@ -37,7 +37,8 @@ public class ColorMapConfiguredPanel extends Component implements TableModelList
 		try {
 			QueryRunner run = new QueryRunner( MSSQLConnectionFactory.datasource());
 
-            java.util.List<Object[]> list  = run.query("select * from thd_configuration ", new ArrayListHandler());
+            java.util.List<Object[]> list  = run.query("select bearing_kit_production.id, production, shaft_extention, " +
+					"identifier, color, color_code from bearing_kit_production left join bearing_kit on bearing_kit.id = bearing_kit_id", new ArrayListHandler());
 
             data = list.toArray(new Object[list.size()][]);
 
