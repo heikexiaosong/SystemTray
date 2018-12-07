@@ -31,6 +31,7 @@ public class MSSQLConnectionFactory {
         }
 
         String url = String.format("jdbc:sqlserver://%s:%d;database=%s", hostName, 1433, database);
+        //String url = String.format("jdbc:jtds:sqlserver://%s:%d/%s", hostName, 1433, database);
         System.out.println("url: " + url);
 
         HikariDataSource ds = new HikariDataSource();

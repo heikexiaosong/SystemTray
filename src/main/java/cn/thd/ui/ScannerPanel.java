@@ -18,14 +18,18 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ScannerPanel extends Component implements ActionListener, SerialPortEventListener {
 
-    private static Pattern PATTERN = Pattern.compile("DR[a-zA-Z]([0-9]*)[a-zA-Z]");//获取正则表达式中的分组，每一组小括号为一组
+    private static final Pattern DIG_PATTERN = Pattern.compile("([0-9]*)");
 
     private static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+    private ExecutorService executorService;
 
     private JTextField orderTextField;
     private JTextArea msg =  new JTextArea(5, 10);
@@ -36,6 +40,8 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
     private  OPCContext context;
 
     public Component make() {
+
+        executorService = Executors.newSingleThreadExecutor();
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -48,16 +54,22 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
             public void keyTyped(KeyEvent e) {
                 int key = e.getKeyChar();
                 if ( key == 10 ){
-                    msg.append("**********************************");
-                    msg.append(DATE_FORMAT.format(new Date()));
-                    msg.append("***********************\r\n");
+                    String orderId = "";
+                    String recevied = StringUtils.trim(orderTextField.getText());;
+                    orderTextField.setText("");
+                    Matcher matcher_dig =  DIG_PATTERN.matcher(recevied);
+                    if ( matcher_dig.find() ) {
+                        orderId = matcher_dig.group(1);
+                    }
 
-                    String orderId = StringUtils.trim(orderTextField.getText());
                     if ( orderId==null || orderId.length()==0 ){
                         return;
                     }
 
-                    orderTextField.setText("");
+                    msg.append("**********************************");
+                    msg.append(DATE_FORMAT.format(new Date()));
+                    msg.append("***********************\r\n");
+
                     msg.append("订单号: " + orderId);
                     msg.append("\r\n");
 
@@ -186,7 +198,15 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                             System.out.print((char)b + ",");
                         }
 
-                        String orderId = new String(buffer).trim();
+                        String orderId = "";
+                        String recevied = new String(buffer).trim();
+                        Matcher matcher_dig =  DIG_PATTERN.matcher(recevied);
+                        if ( matcher_dig.find() ) {
+                            orderId = matcher_dig.group(1);
+                        }
+                        if ( orderId==null || orderId.length()==0 ){
+                            return;
+                        }
 
                         orderTextField.setText(orderId);
 
@@ -246,22 +266,26 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
 
         msg.append(">>> 工装颜色选择: " + colorCode);
         msg.append("\r\n");
+        msg.append(">>> PLC信号发送 ... ");
 
-        msg.paintImmediately(msg.getBounds());
+        final int  _colorCode = colorCode;
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String item_color = PropertiesUtils.getValue("opc.color.itemid", "Channel1.Device1.Color");
+                    String item_pulse = PropertiesUtils.getValue("opc.pulse.itemid", "Channel1.Device1.Pulse");
 
-        try {
-            String item_color = PropertiesUtils.getValue("opc.color.itemid", "Channel1.Device1.Color");
-            String item_pulse = PropertiesUtils.getValue("opc.pulse.itemid", "Channel1.Device1.Pulse");
-
-            context.writeValue(item_color, colorCode);
-            context.pulseSignal(item_pulse, 1000);
-            msg.append(">>> PLC信号发送成功");
-            msg.append("\r\n");
-        }catch (Exception e) {
-            e.printStackTrace();
-            msg.append(">>> PLC数据发送异常: " + e.getMessage());
-        }
-
-        msg.append("\r\n\r\n");
+                    context.writeValue(item_color, _colorCode);
+                    context.pulseSignal(item_pulse, 1000);
+                    msg.append("成功");
+                    msg.append("\r\n");
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    msg.append("异常[" + e.getMessage() + "]");
+                }
+                msg.append("\r\n\r\n");
+            }
+        });
     }
 }

@@ -59,6 +59,6 @@ public class ColorMapping {
 
 
     public static void main(String[] args) {
-        System.out.println(selectColor("DRS71M4", "IEC14x30"));
+        System.out.println(selectColor("DR63M4", "RZ10"));
     }
 }

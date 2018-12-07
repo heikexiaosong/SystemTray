@@ -221,13 +221,14 @@ public class OPCContext {
             final Item item = group.addItem(itemId);
 
             try {
-                item.write(new JIVariant(1));
+
                 System.out.println(Calendar.getInstance().getTimeInMillis() + ": " +  itemId +  " >>> writing value: 1");
+                item.write(new JIVariant(1));
 
                 Thread.sleep(delay);
 
-                item.write(new JIVariant(0));
                 System.out.println(Calendar.getInstance().getTimeInMillis() + ": " +  itemId +  " >>> writing value: 0");
+                item.write(new JIVariant(0));
 
             } catch (JIException e) {
                 e.printStackTrace();
@@ -306,8 +307,13 @@ public class OPCContext {
 
             final  OPCContext  context = OPCContext.create();
 
-            context.monitor(item_pulse, 200, 3000);
+            //context.monitor(item_pulse, 200, 3000);
 
+            context.writeValue(item_color, 1);
+//
+//            context.writeValue(item_pulse, 1);
+//            Thread.sleep(1000);
+//            context.writeValue(item_pulse, 0);
             context.pulseSignal(item_pulse, 1000);
 
 

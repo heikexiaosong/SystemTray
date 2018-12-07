@@ -64,8 +64,8 @@ public class SystemTrayApp {
             final SystemTray tray = SystemTray.getSystemTray();
 
             // Create a popup menu components
-            MenuItem mainUI = new MenuItem("显示/隐藏主界面");
-            MenuItem exitItem = new MenuItem("退出");
+            MenuItem mainUI = new MenuItem("Show/Hiden MainUI");
+            MenuItem exitItem = new MenuItem("Exit");
 
             //Add components to popup menu
             final PopupMenu popup = new PopupMenu();
@@ -83,7 +83,9 @@ public class SystemTrayApp {
 
             trayIcon.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    JOptionPane.showMessageDialog(null, "THD电机轴承颜色检测");
+                    if( !frame.isVisible() ) {
+                        frame.setVisible(true);
+                    }
                 }
             });
 
