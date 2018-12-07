@@ -56,6 +56,7 @@ public class OrderReader {
         }
 
         order.setProduction((String)result.get("production"));
+        order.setQuantity((int)result.get("quantity"));
 
         String line = (String)result.get("notes");
         System.out.println("[notes: " + line.length() + "]: " + line);

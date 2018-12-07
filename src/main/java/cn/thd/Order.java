@@ -5,6 +5,8 @@ import java.util.Map;
 
 public class Order {
 
+    private int quantity;   // 数量
+
     private String production;  // 型号
 
     private String abtriebswelle; // 输出轴
@@ -17,6 +19,14 @@ public class Order {
 
     public void setResult(Map<String, String> result) {
         this.result = result;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public String getProduction() {

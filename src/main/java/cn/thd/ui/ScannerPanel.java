@@ -32,6 +32,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
     private ExecutorService executorService;
 
     private JTextField orderTextField;
+    private JTextField status;
     private JTextArea msg =  new JTextArea(5, 10);
     private JScrollPane scrollPane;
 
@@ -97,6 +98,12 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
         // 添加到内容面板
         mainPanel.add(scrollPane);
 
+        status =  new JTextField(30);
+        status.setMaximumSize(new Dimension(Short.MAX_VALUE, 25));
+        status.setEditable(false);
+        status.setText("扫描枪: 未链接");
+        mainPanel.add(status);
+
         context = OPCContext.create();
 
         return mainPanel;
@@ -107,20 +114,27 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
         String command = ae.getActionCommand();
         if ( "connect".equalsIgnoreCase(command) ){
             System.out.println("ScannerPanel actionPerformed");
-
             System.out.println(App.port + ", " + App.baud + ", " + App.databits + ", " + App.stopbits + ", " + App.parity );
 
+            int baud = 9600;
             try {
-                connect(CommPortIdentifier.getPortIdentifier(App.port));
-            } catch (Exception e) {
-                e.printStackTrace();
+                baud = Integer.parseInt(App.baud);
+            } catch (Exception e){
+                System.out.println(e.getMessage() + ": " + App.baud);
             }
 
+            try {
+                connect(CommPortIdentifier.getPortIdentifier(App.port), baud);
+                status.setText("[扫描枪]已连接: " + App.port);
+            } catch (Exception e) {
+                e.printStackTrace();
+                status.setText("[扫描枪]连接失败: " + e.getMessage());
+            }
         }
     }
 
 
-    public SerialPort connect(CommPortIdentifier portIdentifier) throws Exception {
+    public SerialPort connect(CommPortIdentifier portIdentifier, int baud) throws Exception {
         SerialPort serialPort = null;
         if (portIdentifier.isCurrentlyOwned()) {
             System.out.println("Error: Port is currently in use");
@@ -128,7 +142,7 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
             CommPort commPort = portIdentifier.open("AppTest", 2000);
             if (commPort instanceof SerialPort) {
                 serialPort = (SerialPort) commPort;
-                serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);// serial
+                serialPort.setSerialPortParams(baud, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);// serial
                 serialPort.setRTS(true);
                 serialPort.setDTR(true);
 
@@ -252,6 +266,8 @@ public class ScannerPanel extends Component implements ActionListener, SerialPor
                 System.out.println(String.format("%-32s: %s", name, value));
             }
 
+            msg.append(String.format("数量:   %d",  result.getQuantity()));
+            msg.append("\r\n");
             msg.append(String.format("型号:   %20s",  result.getProduction()));
             msg.append("\r\n");
             msg.append(String.format("输出轴: %20s  ====> 轴伸大小: %s",  result.getAbtriebswelle(),  ShaftExtention.parse(result.getAbtriebswelle())));
